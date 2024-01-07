@@ -4,9 +4,9 @@ Repositório de Anotações e Documentações pessoais sobre ferramentas de DevO
 
 ## Itens documentados
 
-- Linux
-- Git
-- Docker
-- Kubernetes
-- Terraform
-- Ansible
+- [Linux](./01_linux/)
+- [Git](./02_git/)
+- [Docker](./03_docker/)
+- [Kubernetes](./04_kubernetes/)
+- [Terraform](./05-1_terraform/)
+- [Ansible](./05-2_ansible/)
