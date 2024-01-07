@@ -74,3 +74,92 @@ kind: Ingress
 
 - Azure: **AKS** - Azure Kubernetes Service
 - AWS: **EKS** - Elastic Kubernetes Service
+
+## Lista de Comandos
+
+Utilizando o **kubectl** que é a CLI (interface de linha de comandos) do Kubernetes.
+
+### Pods
+
+```bash
+# Criar um Pod
+# kubectl run <desired-pod-name> --image <container-image>
+kubectl run my-first-pod --image iesodias/nginx-images:v1
+```
+
+```bash
+# Listar Pods
+kubectl get pods
+kubectl get pods -o wide
+```
+
+```bash
+# Descrever um Pod
+# kubectl describe pod <pod-name>
+kubectl describe my-first-pod
+```
+
+```bash
+# Excluir um Pod
+# kubectl delete pod <pod-name>
+kubectl delete my-first-pod
+```
+
+### ReplicaSet
+
+### Deployment
+
+### Services
+
+```bash
+# Obter informações de Serviços
+kubectl get service
+kubectl get svc
+```
+
+```bash
+# Descrever um Serviço
+# kubectl describe service <service-name>
+kubectl describe service my-first-service
+```
+
+```bash
+# Load Balancer Service (Expor um Pod)
+# kubectl expose pod <pod-name> --type=LoadBalancer --port=<porta> --name=<service-name>
+kubectl expose pod my-first-pod --type=LoadBalancer --porta=80 --name=my-first-service
+
+# Para acessar a Aplicação
+http://<External-IP-from-get-service-output>
+```
+
+### YAML (Manifestos do Kubernetes - arquivos de definições)
+
+```yaml
+# Estrutura básica
+apiVersion:
+Kind:
+metadata:
+spec:
+```
+
+```yaml
+# Criar a definição simples de um Pod (ex.: "meu-manifeto.yaml" com conteúdo abaixo)
+apiVersion: v1
+Kind: Pod
+metadata: # Dict
+  name: my-first-pod
+  labels:
+    app: my-first-pod
+spec:
+  containers: # List
+    - name: my-first-pod
+      image: iesodias/nginx-images:v1
+      ports:
+        - containerPort: 80
+```
+
+```bash
+# Criar os recurso a partir de um Manifesto Kubernetes (arquivo de configuração)
+# kubectl create -f <nome-arq-manifesto.yaml>
+kubectl create -f meu-manifesto.yaml
+```
