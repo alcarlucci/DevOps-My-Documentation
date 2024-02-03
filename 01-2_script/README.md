@@ -42,6 +42,7 @@ function saudacao() {
   echo "Ola $1, voce tem $2 anos de idade.";
   echo "Seja bem vindo aos estudos de script!";
 }
+
 saudacao Lucas
 ```
 
