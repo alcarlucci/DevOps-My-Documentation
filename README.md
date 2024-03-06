@@ -10,3 +10,9 @@ Repositório de Anotações e Documentações pessoais sobre ferramentas de DevO
 - [Kubernetes](./04_kubernetes/)
 - [Terraform](./05-1_terraform/)
 - [Ansible](./05-2_ansible/)
+
+##
+
+Bons estudos!!!
+
+**André Carlucci**

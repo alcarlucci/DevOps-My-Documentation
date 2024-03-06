@@ -32,12 +32,15 @@ apiVersion: apps/v1
 kind: ReplicaSet
 ```
 
-- **Deployment**: rollout; rollback (add-on: flagger p/ outros tipos de deploy - canary, AB)
+- **Deployment**: estratégias de rollout; rollback para gerenciar atualização de aplicativos (add-on: flagger p/ outros tipos de deploy - canary, AB)
+  - o **Rolling Update** é a estratégia de rollout padrão no Kubernetes: pods antigos são gradualmente substituídos por novos durante a atualização, garantindo o nº de réplicas desejado e a disponibilidade da aplicação durante a atualização.
 
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
 ```
+
+![Arquitetura-Deployment](./img/arquitetura-deployment.png)
 
 - **Services**: fornece um IP virtual; fica na frente do Pod e atua como balanceador de carga
 - Kubernetes **Disks** - persistent volume (PV) - armazenamento persistente:
@@ -45,8 +48,11 @@ kind: Deployment
   - Storage Classes: classe de armazenamento (AKS: standard; premium)
   - Persistent Volume Claims: provisionamento dinâmico
 - Kubernetes **Requests & Limits**:
-  - Requests: CPU; Mem
-  - Limits  : CPU; Mem
+  - Requests e Limits são dois parâmetros importantes usados para configurar os recursos que um contêiner pode usar em um nó do cluster em "CPU" e "Memória".
+  - Requests: qtde mínima de recursos (CPU; Mem)
+  - Limits  : qtde máxima de recursos (CPU; Mem)
+  - Ajudam o Kubernetes a gerenciar melhor os recursos disponíveis e garantir um desempenho estável e previsível para os aplicativos em execução.
+  - Unidades: CPU - "m" (milicores de CPU); Memória - "Mi" (megabytes)
 - Kubernetes **HPA** (Horizontal Pod Autoscaler):
   - escala horizontal automática de Pods em um deployment ou replicaset
   - monitora métricas específicas como a utilização da CPU ou definida pelo usuário
@@ -54,9 +60,9 @@ kind: Deployment
 - Kubernetes **Namespaces**; boas práticas:
   - um cluster kubernetes para cada ambiente (dev; hml; prd)
   - um Namespace no cluster para cada aplicação (app1; app2; ...)
-- **Health Check**:
-  - Liveness Probe: ver se um container está em execução corretamente
-  - Readiness Probe: ver se um container está pronto para receber tráfego
+- **Health Check**: mecanismo usado para avaliar o estado de um aplicativo ou serviço em execução em um contêiner. A finalidade principal do Health Check é garantir que os aplicativos estejam funcionando corretamente e identificar qualquer instância que possa estar em um estado de falha.
+  - Liveness Probe (vivacidade): ver se um container está em execução corretamente
+  - Readiness Probe (prontidão): ver se um container está pronto para receber tráfego
   - Startup Probe: ver se um container está em processo de inicialização
 
 ### Kubernetes Services
@@ -220,6 +226,7 @@ kubectl describe service my-first-service
 # Load Balancer Service (Expor um Pod)
 # kubectl expose pod <pod-name> --type=LoadBalancer --port=<porta> --name=<service-name>
 kubectl expose pod my-first-pod --type=LoadBalancer --porta=80 --name=my-first-service
+```
 
 ```bash
 # Load Balancer Service (Expor um ReplicaSet)
@@ -272,8 +279,12 @@ spec:
 
 ```bash
 # Criar os recursos a partir de um Manifesto Kubernetes (arquivo de configuração)
+
 # kubectl create -f <nome-arq-manifesto.yaml>
 kubectl create -f meu-manifesto.yaml
+
+# kubectl apply -f <nome-arq-manifesto.yaml>
+kubectl apply -f meu-manifesto.yaml
 ```
 
 ```yaml
@@ -318,6 +329,36 @@ spec:
         image: minha-imagem:versao
         ports:
         - containerPort: 8080
+```
+
+```yaml
+# Deployment: especificando três réplicas em execução
+# Utilizando o "Rolling Update" que é a estratégia de rollout padrão no Kubernetes
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: meu-app
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1 # nro máximo de pods que podem estar indisponíveis durante a atualização.
+      maxSurge: 1 # nro máx. de pods adicionais criados além do número desejado durante a atualização
+  selector:
+    matchLabels:
+      app: meu-app
+  template:
+    metadata:
+      labels:
+        app: meu-app
+    spec:
+      containers:
+        - name: meu-container
+          image: meu-app:latest
+          ports:
+          - containerPort: 8080
+
 ```
 
 ```yaml
@@ -386,4 +427,105 @@ spec:
           name: meu-servico
           port:
             number: 80
+```
+
+```yaml
+# Rquests & Limits: definir requests e limits dos recursos (CPU/Mem) em um Deployment de uma aplicação
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+        - name: my-app-container
+          image: sua-imagem:tag
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "512Mi"
+```
+
+```yaml
+# HPA: escalar baseado no uso CPU - mín 2 réplicas, máx. 5 réplicas; utilização da CPU de 50%
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: meu-aplicativo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: meu-aplicativo
+  template:
+    metadata:
+      labels:
+        app: meu-aplicativo
+    spec:
+      containers:
+      - name: meu-container
+        image: minha-imagem:tag
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: meu-aplicativo-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: meu-aplicativo
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
+```
+
+```yaml
+# Health Check: definição para um Pod com readinessProbe (prontidão) e livenessProbe (vivacidade)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mypod
+spec:
+  containers:
+  - name: mycontainer
+    image: myimage
+    readinessProbe:
+      httpGet:
+        path: /healthz
+        port: 8080
+      initialDelaySeconds: 3
+      periodSeconds: 5
+    livenessProbe:
+      httpGet:
+        path: /healthz
+        port: 8080
+      initialDelaySeconds: 3
+      periodSeconds: 5
 ```
