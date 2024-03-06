@@ -136,7 +136,7 @@ Utilizando o **kubectl** que é a CLI (interface de linha de comandos) do Kubern
 ```bash
 # Criar um Pod
 # kubectl run <desired-pod-name> --image <container-image>
-kubectl run my-first-pod --image iesodias/nginx-images:v1
+kubectl run my-first-pod --image my-docker-image:tag
 ```
 
 ```bash
@@ -272,7 +272,7 @@ metadata: # Dict
 spec:
   containers: # List
     - name: my-first-pod
-      image: iesodias/nginx-images:v1
+      image: my-docker-image:tag
       ports:
         - containerPort: 8080
 ```
